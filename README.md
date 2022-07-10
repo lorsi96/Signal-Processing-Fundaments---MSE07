@@ -12,7 +12,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
-from enum import Enum, auto
 from copy import deepcopy as cpy
 from dataclasses import dataclass
 
@@ -38,7 +37,7 @@ def psf_square(spec: PsfWaveformSpec):
 def psf_tri(spec: PsfWaveformSpec):
   amp = 0 if spec.amp < 0 else 1 if spec.amp > 1 else spec.amp
   n = np.arange(spec.samples_n) 
-  sn = amp * signal.sawtooth(2 * np.pi * spec.fo_hz * n / spec.fs_hz + + spec.ph_rad, .5) 
+  sn = amp * signal.sawtooth(2 * np.pi * spec.fo_hz * n / spec.fs_hz + spec.ph_rad, .5) 
   return (sn + amp) / 2
 
 
@@ -56,6 +55,7 @@ def psf_gen_cont_and_disc_wvfm(spec: PsfWaveformSpec, fun=psf_sine):
 
 
 ```python
+## Specs ##
 psf_waveform_spec_discrete = PsfWaveformSpec(
     fo_hz = 100,
     fs_hz = 10000,
@@ -64,12 +64,28 @@ psf_waveform_spec_discrete = PsfWaveformSpec(
     amp = 1
 )
 
+psf_waveform_spec_discrete_2 = cpy(psf_waveform_spec_discrete)
+psf_waveform_spec_discrete_2.ph_rad = np.pi/2,
+psf_waveform_spec_discrete_2.amp = .75
+
+psf_waveform_spec_discrete_3 = cpy(psf_waveform_spec_discrete)
+psf_waveform_spec_discrete_3.fo_hz = 200
+psf_waveform_spec_discrete_3.ph_rad = np.pi
+
+
+## Signals ##
+
 sine = psf_sine(psf_waveform_spec_discrete)
 triangular = psf_tri(psf_waveform_spec_discrete)
 square = psf_square(psf_waveform_spec_discrete)
 time = psf_spec_to_time_sec(psf_waveform_spec_discrete)
 
+tri_2 = psf_tri(psf_waveform_spec_discrete_2)
+sine_2 = psf_sine(psf_waveform_spec_discrete_2)
+sine_3 = psf_sine(psf_waveform_spec_discrete_3)
 
+
+## Plots ##
 plt.figure(figsize=(30, 6))
 plt.title('Formas de onda')
 plt.plot(time, sine, label='Seno')
@@ -78,13 +94,47 @@ plt.plot(time, square, label='Cuadrada')
 plt.grid()
 plt.legend()
 plt.xlabel('Tiempo [Seg]')
-plt.ylabel('Magnitude')
+plt.ylabel('Magnitud')
 plt.show()
+
+plt.figure(figsize=(30, 6))
+plt.title('Formas de onda')
+plt.plot(time, sine, label='Senoidal')
+plt.plot(time, tri_2, label='Triangular ph=pi/4 y amp=.75')
+plt.grid()
+plt.legend()
+plt.xlabel('Tiempo [Seg]')
+plt.ylabel('Magnitud')
+plt.show()
+
+
+plt.figure(figsize=(30, 6))
+plt.title('Formas de onda')
+plt.plot(time, sine, label='Senoidal f=fo')
+plt.plot(time, sine_3, label='Senoidal ph=pi y fo=2*fo')
+plt.grid()
+plt.legend()
+plt.xlabel('Tiempo [Seg]')
+plt.ylabel('Magnitud')
+plt.show()
+
 ```
 
 
     
 ![png](README_files/README_2_0.png)
+    
+
+
+
+    
+![png](README_files/README_2_1.png)
+    
+
+
+
+    
+![png](README_files/README_2_2.png)
     
 
 
