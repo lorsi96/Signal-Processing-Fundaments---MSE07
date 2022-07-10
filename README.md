@@ -192,6 +192,45 @@ La frecuencia de las señales obtenidas es la misma, pero se encuentran desfasad
 De nuevo, esto es consecuencia del aliasing en la segunda señal, `fo = 0.51 fs`, que supera la frecuencia de Shannon-Nyquist.
 Se puede observar en el gráfico como las muestras tomadas de la señal `fo = 0.51 fs` conciden perfectamente con una senoidal de `fo = 0.49 fs` desfasada 180 grados (curva en linea discontínua). 
 
+## CIAA
+### Ejercicio A - Consigna
+-  Escriba un codigo en C para la CIAA que dado q7_t a= 0x040 y q7_t b=0x23, calcule q7_t c = a*b e imprima el resultado en hexadecimal y decimal. Indique su política con respecto al redondeo
+### Ejercicio A - Resolución
+* [Código C](./ciaa_computation_example/src/psf.c)
+### Ejercicio A - Comentarios
+El valor obtenido en la EDU-CIAA-NXP fue el siguiente
+```
+0x11 -> 17 (decimal) -> 0.1328125
+```
+Se ha optado por truncar los bits menos significavos. Consecuentemente, 
+el resultado que en Q15 hubiese sido 0x1180 resultó siendo 0x11 en Q7. El valor 
+truncado, 0x0080, en Q15 representa 2**-8. Este es precisamente el error entre 
+el resultado real de la cuenta propuesta y el obtenido en formato Q7.
+
+### Ejercicio B - Consigna
+Genere con un tono de LA-440. Digitice con 10 y luego con 4 bits, envíe los datos a la PC y graﬁque:
+1. Señal original con su máximo, mínimo y RMS
+1. Señal adquirida con su máximo, mínimo y RMS
+   
+Hay diferencias? a que se deben?. Suba un pdf con los códigos, los gráficos y algunas fotos/video del hardware utilizado
+### Ejercicio B - Resolución
+* [Código C](./ciaa_tone_gen/src/psf.c)
+
+* [Código Python](./ciaa_tone_gen/visualize.py)
+### Ejercicio B - Capturas
+
+### Ejercicio B - Comentarios
+La principal diferencia se observa en comparación a la señal original. Esta 
+cuenta con una mayor extrusión (mayores máximos y menores mínimos) que las 
+señales sensada. Esto es de esperarse, por la atenuación propia del circuito
+de entrada. Lo mismo ocurre con el valor RMS. 
+En cuanto a la comparación entre las señales digitalizadas en 10 y 4 bits, 
+no se observan notorias diferencias en máximos, mínimos y valores RMS. Esto
+se debe a que si bien la cuantización en eEjercicio 2.1 - l firmware se ha realizados a efectos
+de reducir la resolución, la ganancia se ha ajustado para que en ambos casos
+la amplitud de la señal fuera similar. 
+
+
 
 
 ```python
