@@ -218,6 +218,17 @@ Hay diferencias? a que se deben?. Suba un pdf con los códigos, los gráficos y 
 
 * [Código Python](./ciaa_tone_gen/visualize.py)
 ### Ejercicio B - Capturas
+#### Hardware
+![HW1](./images/hardware/photo_2022-07-10_00-41-01.jpg)
+![HW2](./images/hardware/photo_2022-07-10_00-41-06.jpg)
+![HW3](./images/hardware/photo_2022-07-10_00-41-10.jpg)
+#### Señales
+#### Señal Original
+![OG](./images/signals/original.png)
+#### Señal Digitalizada a 10 bits
+![10b](./images/signals/10_bits.png)
+#### Señal Digitalizada a 4 bits
+![4b](./images/signals/4_bits.png)
 
 ### Ejercicio B - Comentarios
 La principal diferencia se observa en comparación a la señal original. Esta 
