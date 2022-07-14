@@ -72,6 +72,31 @@ psf_waveform_spec_discrete_3 = cpy(psf_waveform_spec_discrete)
 psf_waveform_spec_discrete_3.fo_hz = 200
 psf_waveform_spec_discrete_3.ph_rad = np.pi
 
+## Ejemplo ADC/DAC
+psf_waveform_spec_discrete_4 = PsfWaveformSpec(
+    fo_hz = 39000,
+    fs_hz = 20000,
+    samples_n = 40,
+    ph_rad = 0,
+    amp = 1
+)
+
+psf_waveform_spec_discrete_5 = PsfWaveformSpec(
+    fo_hz = 39000,
+    fs_hz = 2000000,
+    samples_n = 4000,
+    ph_rad = 0,
+    amp = 1
+)
+
+psf_waveform_spec_discrete_6 = PsfWaveformSpec(
+    fo_hz = 1000,
+    fs_hz = 200000,
+    samples_n = 400,
+    ph_rad = np.pi,
+    amp = 1
+)
+
 
 ## Signals ##
 
@@ -83,6 +108,14 @@ time = psf_spec_to_time_sec(psf_waveform_spec_discrete)
 tri_2 = psf_tri(psf_waveform_spec_discrete_2)
 sine_2 = psf_sine(psf_waveform_spec_discrete_2)
 sine_3 = psf_sine(psf_waveform_spec_discrete_3)
+
+
+sine_4 = psf_sine(psf_waveform_spec_discrete_4)
+t_4 = psf_spec_to_time_sec(psf_waveform_spec_discrete_4)
+sine_5 = psf_sine(psf_waveform_spec_discrete_5)
+t_5 = psf_spec_to_time_sec(psf_waveform_spec_discrete_5)
+sine_6 = psf_sine(psf_waveform_spec_discrete_6)
+t_6 = psf_spec_to_time_sec(psf_waveform_spec_discrete_6)
 
 
 ## Plots ##
@@ -118,6 +151,17 @@ plt.xlabel('Tiempo [Seg]')
 plt.ylabel('Magnitud')
 plt.show()
 
+plt.figure(figsize=(30, 6))
+plt.title('Ejemplo Pregunta ADC/DAC')
+plt.plot(t_4, sine_4, 'o', label='Senoidal sampleada fo=39kHz')
+plt.plot(t_5, sine_5, label='Senoidal fo=39kHz')
+plt.plot(t_6, sine_6, label='Senoidal ph=180 fo=1kHz')
+plt.grid()
+plt.legend()
+plt.xlabel('Tiempo [Seg]')
+plt.ylabel('Magnitud')
+plt.show()
+
 ```
 
 
@@ -135,6 +179,12 @@ plt.show()
 
     
 ![png](README_files/README_2_2.png)
+    
+
+
+
+    
+![png](README_files/README_2_3.png)
     
 
 
