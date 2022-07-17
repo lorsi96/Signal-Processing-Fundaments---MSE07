@@ -607,23 +607,23 @@ Se muestran a continuación capturas de las señales obtenidas.
 
 ## Ejercicio B - Comentarios
 
-La principal diferencia se observa en comparación a la señal original, donde 
+La principal diferencia se observa en comparación con la señal original, donde 
 esta última cuenta con levemente mayor extrusión que las señales medidas. 
-Esto es de esperarse, por la atenuación propia del circuito de entrada. 
+Esto es de esperarse, dada la atenuación propia del circuito de entrada. 
 Lo mismo ocurre con el valor RMS. 
 
 En cuanto a la comparación entre las señales digitalizadas en 10 y 4 bits, 
 no se observan notorias diferencias en máximos, mínimos y valores RMS. Esto
-se debe a que, si bien la cuantización en el Ejercicio 2.1 se ha realizado a 
+se debe a que si bien la cuantización en el Ejercicio 2.1 se ha realizado a 
 efectos de reducir la resolución, la ganancia se ha ajustado para que en ambos 
 casos la amplitud de la señal fuera similar. 
 
-Es relevante notar las diferencias espectrales entre las señales. En frecuencia, 
+Es relevante destacar las diferencias espectrales entre las señales. En frecuencia, 
 se observa que la señal digitalizada en 4-bits cuenta con pequeños picos en
 bines alejados de la  `fo` original (440Hz). Esto se debe al ruido de 
-cuantización, que aleja a la señal generada de una senoidal pura y le aporta
-componentes de frecuencia insdeseados por los abruptos cambios de nivel. Además, 
-incide en la relación señal a ruido, ya que no solo aparecen componentes
+cuantización que aleja a la señal generada de una senoidal pura y le aporta
+componentes de frecuencia insdeseados (por los abruptos cambios de niveles). 
+Además, incide en la relación señal a ruido, ya que no solo aparecen componentes
 en frecuencias indeseadas, sino que la potencia distribuida en ellos es a 
 expsensas de aquella de la componente principal de 440Hz. Esto se
 hace evidente en la comparación, donde si bien la extrusión y el RMS de las
