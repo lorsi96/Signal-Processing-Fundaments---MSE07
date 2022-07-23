@@ -608,11 +608,11 @@ Se muestran a continuación capturas de las señales obtenidas.
 ## Ejercicio B - Comentarios
 
 En pirmer lugar, se observa que la señal original cuenta con levemente mayor 
-extrusión que las señales medidas. Esto es de esperarse, dado que las señales
-medidas cuentan con la atenuación propia del circuito construido y la señal
-original no. Lo mismo ocurre con el valor RMS, ya que tiene mayor energía.
-Esto se hace evidente además observando el pico de 440Hz en el espectro, 
-donde se observa un valor de ~0.45 contra ~0.35 de las señales medidas. 
+extrusión que las señales medidas. Esto es de esperarse, dad que las segundas
+cuentan con la atenuación propia del circuito construido y la primera no. 
+Esto mismo ocurre con el valor RMS. Esto se hace evidente además observando el 
+pico de 440Hz en el espectro, de valor ~0.45 en la señal original contra 
+~0.35 en las señales adquiridas. 
 
 
 En cuanto a la comparación entre las señales digitalizadas en 10 y 4 bits, 
@@ -620,10 +620,10 @@ no se observan notorias diferencias en máximos y mínimos, pero sí en
 el RMS. Esto se debe a que la señal cuantizada a 4 bits cuenta con mayor ruido
 de cuantización que aquella cuantizada a 10 bits. Desde un punto de vista teórico, 
 de darse las precondiciones estudiadas en clase, puede considerarse el ruido
-de cuantización aditivo y con distribuición uniforme. En este caso, existe
-una difrencia en RMS porque, si bien la componente de señal de interés en ambos
+de cuantización aditivo y con distribuición uniforme. Esto justifica la diferencia
+qu se observa en los valores de RMS: si bien la componente de señal de interés en ambos
 casos cuenta con niveles similares de potencia (observar que el pico de 440Hz
-en el espectro tiene un valor de 0.35 en ambos casos), aquella cuantizada en
+en el espectro tiene un valor de ~0.35 en ambos casos), aquella cuantizada en
 4 bits cuenta con un mayor nivel de ruido de cuantización. Al considerar entonces
 la potencia total como la suma de potencia de la señal original con la del ruido de cuantización,
 es razonable que aquella con mayor ruido (senoidal cuantizada a 4bits) sea la
