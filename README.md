@@ -603,31 +603,29 @@ Se muestran a continuación capturas de las señales obtenidas.
 |----------	|--------	|--------	|-------	|-----------------	|
 | Original 	| 1.647  	| -1.647 	| 1.173 	| ~0.45           	|
 | 10-bits  	| 1.466  	| -1.563 	| 1.062 	| ~0.35           	|
-| 4-bits   	| 1.444  	| -1.65  	| 1.029 	| ~0.30           	|
+| 4-bits   	| 1.444  	| -1.65  	| 1.029 	| ~0.35           	|
 
 ## Ejercicio B - Comentarios
 
-La principal diferencia se observa en comparación con la señal original, donde 
-esta última cuenta con levemente mayor extrusión que las señales medidas. 
-Esto es de esperarse, dada la atenuación propia del circuito de entrada. 
-Lo mismo ocurre con el valor RMS. 
+En pirmer lugar, se observa que la señal original cuenta con levemente mayor 
+extrusión que las señales medidas. Esto es de esperarse, dado que las señales
+medidas cuentan con la atenuación propia del circuito construido y la señal
+original no. Lo mismo ocurre con el valor RMS, ya que tiene mayor energía.
+Esto se hace evidente además observando el pico de 440Hz en el espectro, 
+donde se observa un valor de ~0.45 contra ~0.35 de las señales medidas. 
+
 
 En cuanto a la comparación entre las señales digitalizadas en 10 y 4 bits, 
-no se observan notorias diferencias en máximos, mínimos y valores RMS. Esto
-se debe a que si bien la cuantización en el Ejercicio 2.1 se ha realizado a 
-efectos de reducir la resolución, la ganancia se ha ajustado para que en ambos 
-casos la amplitud de la señal fuera similar. 
-
-Es relevante destacar las diferencias espectrales entre las señales. En frecuencia, 
-se observa que la señal digitalizada en 4-bits cuenta con pequeños picos en
-bines alejados de la  `fo` original (440Hz). Esto se debe al ruido de 
-cuantización que aleja a la señal generada de una senoidal pura y le aporta
-componentes de frecuencia insdeseados (por los abruptos cambios de niveles). 
-Además, incide en la relación señal a ruido, ya que no solo aparecen componentes
-en frecuencias indeseadas, sino que la potencia distribuida en ellos es a 
-expsensas de aquella de la componente principal de 440Hz. Esto se
-hace evidente en la comparación, donde si bien la extrusión y el RMS de las
-señales es muy similar (~ 3% de varaición en el RMS), la diferencia entre el
-nivel de los picos es mucho mayor (~17%) en favor a la señal de 10-bits.
-
+no se observan notorias diferencias en máximos y mínimos, pero sí en
+el RMS. Esto se debe a que la señal cuantizada a 4 bits cuenta con mayor ruido
+de cuantización que aquella cuantizada a 10 bits. Desde un punto de vista teórico, 
+de darse las precondiciones estudiadas en clase, puede considerarse el ruido
+de cuantización aditivo y con distribuición uniforme. En este caso, existe
+una difrencia en RMS porque, si bien la componente de señal de interés en ambos
+casos cuenta con niveles similares de potencia (observar que el pico de 440Hz
+en el espectro tiene un valor de 0.35 en ambos casos), aquella cuantizada en
+4 bits cuenta con un mayor nivel de ruido de cuantización. Al considerar entonces
+la potencia total como la suma de potencia de la señal original con la del ruido de cuantización,
+es razonable que aquella con mayor ruido (senoidal cuantizada a 4bits) sea la
+de mayor RMS.
 

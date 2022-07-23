@@ -14,7 +14,7 @@ header = { "head": b"head", "id": 0, "N": 128, "fs": 10000, "maxIndex":0, "minIn
 fig    = plt.figure ( 1 )
 
 adcAxe = fig.add_subplot ( 2,1,1                            )
-adcLn, = plt.plot        ( [],[],'r-',linewidth=4           )
+adcLn, = plt.plot        ( [],[],'or-',linewidth=4           )
 minValueLn, = plt.plot   ( [],[],'g-',linewidth=2,alpha=0.3 )
 maxValueLn, = plt.plot   ( [],[],'y-',linewidth=2,alpha=0.3 )
 rmsLn, = plt.plot        ( [],[],'b-',linewidth=2,alpha=0.3 )
