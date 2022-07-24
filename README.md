@@ -603,12 +603,12 @@ Se muestran a continuación capturas de las señales obtenidas.
 |----------	|--------	|--------	|-------	|-----------------	|
 | Original 	| 1.647  	| -1.647 	| 1.173 	| ~0.45           	|
 | 10-bits  	| 1.466  	| -1.563 	| 1.062 	| ~0.35           	|
-| 4-bits   	| 1.444  	| -1.65  	| 1.029 	| ~0.35           	|
+| 4-bits   	| 1.444  	| -1.65  	| 1.078 	| ~0.35           	|
 
 ## Ejercicio B - Comentarios
 
 En pirmer lugar, se observa que la señal original cuenta con levemente mayor 
-extrusión que las señales medidas. Esto es de esperarse, dad que las segundas
+extrusión que las señales medidas. Esto es de esperarse, dado que las segundas
 cuentan con la atenuación propia del circuito construido y la primera no. 
 Esto mismo ocurre con el valor RMS. Esto se hace evidente además observando el 
 pico de 440Hz en el espectro, de valor ~0.45 en la señal original contra 
