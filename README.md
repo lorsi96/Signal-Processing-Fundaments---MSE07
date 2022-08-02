@@ -1,17 +1,16 @@
-# Simulaciones
+# Trabajo Práctico Número 2 - Procesamiento de Señales, Fundamentos
 
-## Ejercicio 1 - Consigna
-- Genere un paquete/modulo o archivo que permita sintetizar las señales descriptas en la imagen. Se espera un link a un pdf con el código y algunas capturas que validen su funcionamiento.
-
-## Ejercicio 1 - Resolución
+## DFT - Ejercicio I
+Graﬁque las siguientes señales lado a lado con su respectivo espectro en frecuencias:  1) Senoidal. 2) Cuadrada. 3) Triangular 4) Delta en t=0. Indicando en cada caso los siguientes parámetros (si corresponde) : 1) Frecuencia. B) Amplitud. C) Potencia promedio. D) Fs. E) N. 5) Pegue el link a un pdf con los códigos, gráficos y comentarios.
 
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from enum import Enum, auto
 from copy import deepcopy as cpy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class PsfWaveformSpec:
@@ -21,25 +20,37 @@ class PsfWaveformSpec:
   ph_rad: float = 0
   amp: float = 1
 
+@dataclass
+class PsfWaveformData(PsfWaveformSpec):
+  power_time: float = 0
+  power_freq: float = 0
 
-# Generador de Formas de Onda.
+
+# Waveform Generators.
 def psf_sine(spec: PsfWaveformSpec):
   amp = 0 if spec.amp < 0 else 1 if spec.amp > 1 else spec.amp
   n = np.arange(spec.samples_n) 
-  sn = amp * np.sin((2 * np.pi * spec.fo_hz * n / spec.fs_hz) + spec.ph_rad)
-  return (sn + amp) / 2
+  return amp * np.sin((2 * np.pi * spec.fo_hz * n / spec.fs_hz) + spec.ph_rad)
 
 def psf_square(spec: PsfWaveformSpec):
-  return psf_sine(spec) >= (spec.amp / 2)
+  amp = 0 if spec.amp < 0 else 1 if spec.amp > 1 else spec.amp
+  n = np.arange(spec.samples_n) 
+  return amp * signal.square(2 * np.pi * spec.fo_hz * n / spec.fs_hz + + spec.ph_rad, .5) 
   
 def psf_tri(spec: PsfWaveformSpec):
   amp = 0 if spec.amp < 0 else 1 if spec.amp > 1 else spec.amp
   n = np.arange(spec.samples_n) 
-  sn = amp * signal.sawtooth(2 * np.pi * spec.fo_hz * n / spec.fs_hz + spec.ph_rad, .5) 
-  return (sn + amp) / 2
+  return amp * signal.sawtooth(2 * np.pi * spec.fo_hz * n / spec.fs_hz + + spec.ph_rad, .5) 
+
+def psf_delta(spec: PsfWaveformSpec):
+  amp = 0 if spec.amp < 0 else 1 if spec.amp > 1 else spec.amp
+  sn = np.zeros(spec.samples_n) 
+  sn[0] = 1.0
+  return sn
 
 
-# Utilidades.
+
+# Utilities.
 def psf_spec_to_time_sec(spec: PsfWaveformSpec):
   return np.arange(spec.samples_n) * 1/spec.fs_hz
 
@@ -49,119 +60,70 @@ def psf_gen_cont_and_disc_wvfm(spec: PsfWaveformSpec, fun=psf_sine):
   spec_cont.samples_n = spec_cont.samples_n * 100
   return (psf_spec_to_time_sec(spec), fun(spec)), (psf_spec_to_time_sec(spec_cont), fun(spec_cont))  
 
+def easy_fft(x, fs):
+    fft = np.abs(np.fft.fftshift(np.fft.fft(x)/len(x)))
+    fft_fs = np.fft.fftshift(np.fft.fftfreq(len(x), 1/fs))
+    return fft, fft_fs
+
+def get_avg_power_f(X):
+  return np.sum(abs(X)**2)
+
+def get_avg_power_t(x):
+  return np.sum(x**2) / len(x)
+
+
 font = {'weight' : 'normal',
-        'size'   : 22}
+        'size'   : 12}
 
 plt.rc('font', **font)
 ```
 
 
 ```python
-## Specs ##
-psf_waveform_spec_discrete = PsfWaveformSpec(
-    fo_hz = 100,
-    fs_hz = 10000,
-    samples_n = 400,
+def get_avg_power(spectrum):
+  return np.sqrt(np.sum(spectrum**2))
+
+
+
+font = {'weight' : 'normal',
+        'size'   : 22}
+
+plt.rc('font', **font)
+
+wfm = PsfWaveformSpec(
+    fo_hz = 10,
+    fs_hz = 1000,
+    samples_n = 500,
     ph_rad = 0,
     amp = 1
 )
 
-psf_waveform_spec_discrete_2 = cpy(psf_waveform_spec_discrete)
-psf_waveform_spec_discrete_2.ph_rad = np.pi/2,
-psf_waveform_spec_discrete_2.amp = .75
+waveforms = (psf_square, psf_sine, psf_tri, psf_delta)
 
-psf_waveform_spec_discrete_3 = cpy(psf_waveform_spec_discrete)
-psf_waveform_spec_discrete_3.fo_hz = 200
-psf_waveform_spec_discrete_3.ph_rad = np.pi
-
-## Ejemplo ADC/DAC
-psf_waveform_spec_discrete_4 = PsfWaveformSpec(
-    fo_hz = 39000,
-    fs_hz = 20000,
-    samples_n = 40,
-    ph_rad = 0,
-    amp = 1
-)
-
-psf_waveform_spec_discrete_5 = PsfWaveformSpec(
-    fo_hz = 39000,
-    fs_hz = 2000000,
-    samples_n = 4000,
-    ph_rad = 0,
-    amp = 1
-)
-
-psf_waveform_spec_discrete_6 = PsfWaveformSpec(
-    fo_hz = 1000,
-    fs_hz = 200000,
-    samples_n = 400,
-    ph_rad = np.pi,
-    amp = 1
-)
+fig, axs = plt.subplots(len(waveforms), 2 , figsize=(30, 30), gridspec_kw={'width_ratios': [1, 4]})
 
 
-## Signals ##
+for i, fun in enumerate((psf_square, psf_sine, psf_tri, psf_delta)):
+  time = np.arange(0, wfm.samples_n) * 1/wfm.fs_hz
+  sig = fun(wfm)
+  fft, fft_fs = easy_fft(sig, wfm.fs_hz)
+  fft = np.abs(np.fft.fftshift(np.fft.fft(sig)/len(sig)))
+  fft_fs = np.linspace(-wfm.fs_hz / 2, wfm.fs_hz / 2, wfm.samples_n)
+  
+  d = PsfWaveformData(power_freq=get_avg_power_f(fft), power_time=get_avg_power_t(sig),  **wfm.__dict__)
+  axs[i, 0].plot(time, sig, label=fun.__name__)
+  axs[i, 0].legend()
+  axs[i, 0].set_xlabel('Time [Sec]')
+  axs[i, 0].set_ylabel('Magnitude')
+  axs[i, 1].set_title(str(d))
+  axs[i, 1].plot(fft_fs, fft, '-o', label=fun.__name__)
+  axs[i, 1].legend()
+  axs[i, 1].set_xlabel('Frequencies [Hz]')
+  axs[i, 1].set_ylabel('Magnitude')
+  axs[i, 1].set_xticks(range(-490, 500, 20))
+  axs[i, 1].set_xticklabels(range(-490, 500, 20), rotation=40)
 
-sine = psf_sine(psf_waveform_spec_discrete)
-triangular = psf_tri(psf_waveform_spec_discrete)
-square = psf_square(psf_waveform_spec_discrete)
-time = psf_spec_to_time_sec(psf_waveform_spec_discrete)
-
-tri_2 = psf_tri(psf_waveform_spec_discrete_2)
-sine_2 = psf_sine(psf_waveform_spec_discrete_2)
-sine_3 = psf_sine(psf_waveform_spec_discrete_3)
-
-
-sine_4 = psf_sine(psf_waveform_spec_discrete_4)
-t_4 = psf_spec_to_time_sec(psf_waveform_spec_discrete_4)
-sine_5 = psf_sine(psf_waveform_spec_discrete_5)
-t_5 = psf_spec_to_time_sec(psf_waveform_spec_discrete_5)
-sine_6 = psf_sine(psf_waveform_spec_discrete_6)
-t_6 = psf_spec_to_time_sec(psf_waveform_spec_discrete_6)
-
-
-## Plots ##
-plt.figure(figsize=(30, 6))
-plt.title('Formas de onda')
-plt.plot(time, sine, label='Seno')
-plt.plot(time, triangular, label='Triangular')
-plt.plot(time, square, label='Cuadrada')
-plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Seg]')
-plt.ylabel('Magnitud')
-plt.show()
-
-plt.figure(figsize=(30, 6))
-plt.title('Formas de onda')
-plt.plot(time, sine, label='Senoidal')
-plt.plot(time, tri_2, label='Triangular ph=pi/4 y amp=.75')
-plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Seg]')
-plt.ylabel('Magnitud')
-plt.show()
-
-
-plt.figure(figsize=(30, 6))
-plt.title('Formas de onda')
-plt.plot(time, sine, label='Senoidal f=fo')
-plt.plot(time, sine_3, label='Senoidal ph=pi y fo=2*fo')
-plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Seg]')
-plt.ylabel('Magnitud')
-plt.show()
-
-plt.figure(figsize=(30, 6))
-plt.title('Ejemplo Pregunta ADC/DAC')
-plt.plot(t_4, sine_4, 'o', label='Senoidal sampleada fo=39kHz')
-plt.plot(t_5, sine_5, label='Senoidal fo=39kHz')
-plt.plot(t_6, sine_6, label='Senoidal ph=180 fo=1kHz')
-plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Seg]')
-plt.ylabel('Magnitud')
+plt.tight_layout()
 plt.show()
 
 ```
@@ -172,61 +134,97 @@ plt.show()
     
 
 
+## DFT - Ejercicio I - Comentarios
+Se puede observar que:
 
-    
-![png](README_files/README_2_1.png)
-    
+* El espectro de la señal cuadrada cuenta con contenido armónico múltiplo de la
+frecuencia original, pero con armonicos _páres_ nulos. 
 
+* El espectro de la señal triángular es similar a la cuadrada, pero la 
+atenucación de cada armónico subsiguiente es aún mayor (cuadrática inversa).
 
+* El espectro de la señal senoidal consiste de únicamente un pico de frecuencia,
+con su contraparte en frecuencias negativas.
 
-    
-![png](README_files/README_2_2.png)
-    
+* El espectro de la delta es constante. Cabe destacar que el valor de dicha 
+constante es tal que su *energía* total en el espectro es igual a 1. 
+Cobra más sentido hablar de energía en este caso, porque no es una señal 
+periódica como las anteriores.
 
-
-
-    
-![png](README_files/README_2_3.png)
-    
-
-
-## Ejercicio 2 - Consigna
-
--  Utilizando la funcion senoidal confeccionada en el enunciado anterior, siga los pasos indicados en la imagen y suba un pdf con los resultados. NOTA: cuando dice en 2.1 por ej f0=0.1 * fs, lo que pide es que la frecuencia de la señal de entrada sea un 10% del valor de la frecuencia de sampleo. Si elijen fs=100 entonces f0=10 y f0=110. Cuando grafiquen estas dos señales se pide que indique como haría para diferenciarlas (si fuera posible). Lo mismo para el 2.2, con el detalle que ademas se pide evaluar la fase entre los dos casos del experimento. Es decir las respuestas a 2.1 y 2.2 aunque podrían argumentarlas teóricamente, se invita a que grafiquen los casos y estos revelen la situación para que puedan responder en base a estos.
-
-## Ejercicio 2.1 - Resolución
+## DFT ejercicio II
+Dado el archivo clases/tp2/resolucion_espectral.txt  que contiene 100 valores reales sampleados a Fs=200Hz, indique: 1) Resolución espectral. 2) Espectro en frecuencia de la señal. 3) A simple inspección que frecuencia(s) distingue. 4) Aplique alguna técnica que le permita mejorar la resolución espectral y tome nuevamente el espectro. 5) Indique si ahora los resultados difieren del punto 3 y argumente su respuesta. 6) Pegue el link a un pdf con los códigos, gráficos y comentarios.
 
 
 ```python
-# Ex. 2.1
-psf_waveform_spec_discrete = PsfWaveformSpec(
-    fo_hz = 100,
-    fs_hz = 1000,
-    samples_n = 10,
-    ph_rad = 0,
-    amp = 1
-)
+import numpy as np
+import scipy
 
-spec_2_1_a = cpy(psf_waveform_spec_discrete)
-spec_2_1_a.fo_hz = spec_2_1_a.fs_hz * 0.1
 
-spec_2_1_b = cpy(psf_waveform_spec_discrete)
-spec_2_1_b.fo_hz = spec_2_1_a.fs_hz * 1.1
+font = {'weight' : 'normal',
+        'size'   : 16}
 
-(t1d, f1d), (t1c, f1c) = psf_gen_cont_and_disc_wvfm(spec_2_1_a)
-(t2d, f2d), (t2c, f2c) = psf_gen_cont_and_disc_wvfm(spec_2_1_b)
+plt.rc('font', **font)
 
-plt.figure(figsize=(30, 6))
-plt.title('Ejercicio 2.1 - Alias')
-plt.plot(t1d, f1d, 'o', label='Fo = 0.1 Fs')
-plt.plot(t2d, f2d, 'o', label='Fo = 1.1 Fs')
-plt.plot(t1c, f1c, label='Fo = 0.1 Fs')
-plt.plot(t2c, f2c, label='Fo = 1.1 Fs')
+# Constants.
+FS = 200
+PSF_FILE = './data/resolucion_espectral.txt' 
+PADDING_SIG_LEN_MULT = 5
+
+# Waveform loading.
+with open(PSF_FILE) as f:
+    sig = np.array(eval(f.read()))
+    time = np.arange(len(sig)) * 1/FS
+
+# Original signal in time domain.
+plt.figure(figsize=(25,8))
+plt.plot(time, sig)
 plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Segundos]')
-plt.ylabel('Magnitud')
+plt.ylabel('Amplitude')
+plt.xlabel('Time [Sec]')
+plt.title('Original signal in time domain')
 plt.show()
+
+# Original signal spectrum
+## FFT & peak detection.
+fft, freqs = easy_fft(sig, FS)
+peaks_ind, peaks = scipy.signal.find_peaks(fft, height=0.15)
+peaks_fs = [freqs[i] for i in peaks_ind]
+peaks_vals = peaks['peak_heights']
+# ---
+plt.figure(figsize=(25,8))
+plt.plot(freqs, fft)
+plt.plot(peaks_fs, peaks_vals, 'o')
+for f in peaks_fs:
+    plt.axvline(x=f, color='r', linestyle='--')
+plt.title('Original Signal Spectrum')
+plt.xticks(np.concatenate((np.linspace(-100, 100, 11), peaks_fs)), rotation=45)
+plt.xlabel('Frequencies [Hz]')
+plt.ylabel('Magnitude')
+plt.show()
+
+
+# Signal padded
+## FFT & peak detection.
+sig_padded = np.concatenate((sig, np.zeros(924)))
+fft, freqs = easy_fft(sig_padded, FS)
+peaks_ind, peaks = scipy.signal.find_peaks(fft, height=0.02)
+peaks_pd_fs = [freqs[i] for i in peaks_ind]
+peaks_vals = peaks['peak_heights']
+plt.figure(figsize=(25,8))
+plt.plot(freqs, fft)
+plt.plot(peaks_pd_fs, peaks_vals, 'o')
+for f in peaks_pd_fs:
+    plt.axvline(x=f, color='r', linestyle='--')
+plt.xticks(np.concatenate((np.linspace(-100, 100, 11), peaks_pd_fs)), rotation=45)
+plt.xlabel('Frequencies [Hz]')
+plt.ylabel('Magnitude')
+plt.title('Signal Spectrum (zerop added)')
+plt.show()
+
+print(f'Peaks before padding (Hz): ' + '; '.join(map(str, peaks_fs)))
+print(f'Peaks after padding (Hz): ' + '; '.join(map(str, peaks_pd_fs)))
+
+
 ```
 
 
@@ -235,54 +233,59 @@ plt.show()
     
 
 
-## Ejercicio 2.1 - Comentarios
 
-Se observa que para ambas funciones la muestras obtenidas son exactamente las mismas. 
-Este fenómeno de repetición es propio de muestrear señales que superan frecuencia de sampleo de Shannon-Nyquist (aliasing). 
+    
+![png](README_files/README_4_1.png)
+    
 
-En cuanto a si las señales pueden diferenciarse, la respuesta es que no: la información que ingresa al sistema al muestrear cualquiera de estas dos señales es exactamente la misma, por lo cual, son indistinguibles. 
 
-La _solución_ correcta en este caso sería no permitir el ingreso al sistema de señales que superen `fs/2` (filtro anti-alias) o muestrear  una frecuencia del doble de la señal de máxima frecuencia y así poder distinguirlas. De esta manera, se puodría garantizar una reconstrucción/interpretación _fiel_ de la señal entrante.
 
-## Ejercicio 2.2 - Resolución
+    
+![png](README_files/README_4_2.png)
+    
 
+
+    Peaks before padding (Hz): -50.0; 50.0
+    Peaks after padding (Hz): -52.5390625; -49.8046875; 49.8046875; 52.5390625
+
+
+## DFT - Ejercicio II - Comentarios
+Puede observarse que con la resolución espectral resultante de utilizar
+únicamente el número de muestras de la señal original, se pueden distinguir
+solo dos picos en +-50 Hz. A priori la asimetría en la envolvente de los picos
+permite sospechar que no es un tono puro, pero resulta imposible comprender
+exactamente cómo está conformada la señal.
+
+Luego de aplicar la técnica de `Zero Padding` para aumentar la resolución en
+frecuencia (a costas de perder SNR) se pueden distinguir claramente dos picos
+de frecuencias en 48.9 y 52.5 (con su contrapartida negativa). Esto permite
+apreciar de mejor manera que la señal original se trata posiblemente de una
+suma de dos tonos de estas frecuencias, y no simplemente un tono o señal de
+50Hz.
+
+## IDFT - Ejercicio
+En el archivo clases/tp2/ﬀt_hjs.npy se almacenaron los valores de un espectro en frecuencia correspondientes a una señal desconocida. Indique: 1) Puede estimar que representa esta señal? (tip: grafique en 2d la idft) 2) Hasta que punto podría limitar el ancho de banda del espectro dado en el archivo y que aun se logre interpretar la señal? 3) Pegue el link a un pdf con los códigos y los gráficos utilizados.
 
 
 ```python
-psf_waveform_spec_discrete = PsfWaveformSpec(
-    fo_hz = 100,
-    fs_hz = 1000,
-    samples_n = 20,
-    ph_rad = 0,
-    amp = 1
-)
+import numpy as np
+sig_spectrum = np.load('./data/fft_hjs.npy')
 
+def ifft_2d(x):
+    sig = np.fft.ifft(x)
+    return (np.imag(sig), np.real(sig))
 
-spec_2_2_a = cpy(psf_waveform_spec_discrete)
-spec_2_2_a.fo_hz = spec_2_1_a.fs_hz * 0.49
+def spectrum_truncate(x, n):
+    return np.concatenate((x[:n], x[len(x)-n:]))
+    
 
-spec_2_2_b = cpy(psf_waveform_spec_discrete)
-spec_2_2_b.fo_hz = spec_2_1_a.fs_hz * 0.51
-
-spec_2_2_c = cpy(psf_waveform_spec_discrete)
-spec_2_2_c.ph_rad = np.pi
-spec_2_2_c.fo_hz = spec_2_1_a.fs_hz * 0.49
-
-(t1d, f1d), (t1c, f1c) = psf_gen_cont_and_disc_wvfm(spec_2_2_a)
-(t2d, f2d), (t2c, f2c) = psf_gen_cont_and_disc_wvfm(spec_2_2_b)
-(t3d, f3d), (t3c, f3c) = psf_gen_cont_and_disc_wvfm(spec_2_2_c)
-
-plt.figure(figsize=(30, 6))
-plt.title('Ejercicio 2.2 - Alias con cambio de fase de 180 grados')
-plt.plot(t1d, f1d, 'o', color='r', label='Fo = 0.49 Fs')
-plt.plot(t2d, f2d, 'o', color='g',label='Fo = 0.51 Fs')
-plt.plot(t1c, f1c, color='r', label='Fo = 0.49 Fs')
-plt.plot(t2c, f2c, color='g', label='Fo = 0.51 Fs')
-plt.plot(t3c, f3c, '--',color='gray',label='Fo = 0.49 Fs (180deg shift)')
-plt.grid()
-plt.legend()
-plt.xlabel('Tiempo [Segundos]')
-plt.ylabel('Magnitud')
+test_points =(500, 250, 225, 200, 150, 100, 50, 25, 10)
+fig, axs = plt.subplots(nrows=3, ncols=3, figsize=(20, 20))
+for i in range(3):
+    for j in range(3):
+        x, y = ifft_2d(spectrum_truncate(sig_spectrum, test_points[3*i + j]))
+        axs[i, j].plot(x, y)
+        axs[i, j].set_title(f'Samples: {2 * test_points[3*i + j]} / BW Ratio: {test_points[3*i + j] / 500} fo')
 plt.show()
 ```
 
@@ -292,340 +295,10 @@ plt.show()
     
 
 
-## Ejercicio 2.2 - Comentarios
-La frecuencia de las señales obtenidas es la misma, pero se encuentran desfasadas 180 grados. 
-De nuevo, esto es consecuencia del aliasing en la segunda señal, `fo = 0.51 fs`, que supera la frecuencia de Shannon-Nyquist.
-Se puede observar en el gráfico como las muestras tomadas de la señal `fo = 0.51 fs` conciden perfectamente con una senoidal de `fo = 0.49 fs` desfasada 180 grados (curva en linea discontínua). 
+## IDFT - Ejercicio - Comentarios
+Puede observarse como el Homero Simpson modelado por el espectro de la señal
+original se va deformando a medida que se reducen las muestras. Por inspección,
+tomando únicamente 200 muestras de las 1000 originales sería suficiente para
+reconocer a Homero (y quizás con 100 también).
 
-# CIAA
-## Ejercicio A - Consigna
--  Escriba un codigo en C para la CIAA que dado q7_t a= 0x040 y q7_t b=0x23, calcule q7_t c = a*b e imprima el resultado en hexadecimal y decimal. Indique su política con respecto al redondeo
-
-## Ejercicio A - Resolución
-### Código C
-```c
-#include "sapi.h"
-#include "arm_math.h"
-
-q7_t q7_multiply(q15_t a, q15_t b) {
-   q15_t res = (a * b) << 1; // q14 -> q15.
-   return (q7_t) (res >> 8); // Trunco.
-}
-
-
-uint16_t q7_print(q7_t n, char *buf)
-{
-   int i;
-   float ans=(n&0x80)?-1:0;
-   for(i=1;i<8;i++)
-   {
-      if(n&(0x80>>i)){
-         ans+=1.0/(1U<<i);
-      }
-   }
-   return sprintf(buf,"q7: 0x%x (%i dec); float:%.20f\r\n", n, n, ans);
-}
-
-
-int main ( void ) {
-   uint16_t sample = 0;
-   int16_t len;
-   char buf [200] = {0};
-
-   boardConfig (                  );
-   uartConfig  ( UART_USB, 460800 );
-   adcConfig   ( ADC_ENABLE       );
-   cyclesCounterInit ( EDU_CIAA_NXP_CLOCK_SPEED );
-
-   q7_t a = 0x040;
-   q7_t b = 0x023;
-   
-   for(;;) {
-      cyclesCounterReset();
-      len = q7_print(q7_multiply(a, b), buf);
-      uartWriteByteArray (UART_USB, buf ,len);
-      gpioToggle (LED1);
-      delay(500);
-   }
-}
-```
-## Ejercicio A - Comentarios
-
-El valor obtenido en la EDU-CIAA-NXP fue el siguiente
-```
-0x11 -> 17 (decimal) -> 0.1328125
-```
-Se ha optado por truncar los bits menos significavos. Consecuentemente, 
-el resultado que en Q15 hubiese sido 0x1180 resultó siendo 0x11 en Q7. El valor 
-truncado, 0x0080, en Q15 representa 2**-8. Este es precisamente el error entre 
-el resultado real de la cuenta propuesta y el obtenido en formato Q7.
-
-## Ejercicio B - Consigna
-
-Genere con un tono de LA-440. Digitice con 10 y luego con 4 bits, envíe los datos a la PC y graﬁque:
-1. Señal original con su máximo, mínimo y RMS
-1. Señal adquirida con su máximo, mínimo y RMS
-   
-Hay diferencias? a que se deben?. Suba un pdf con los códigos, los gráficos y algunas fotos/video del hardware utilizado.
-
-## Ejercicio B - Resolución
-
-### Código C
-
-```c
-#include "sapi.h"
-#include "arm_math.h"
-
-
-
-/* ************************************************************************* */
-/*                               Configuration                               */
-/* ************************************************************************* */
-# define   SIGNAL_10B         0
-# define   SIGNAL_4B          1
-# define   SIGNAL_ORIGINAL    2
-
-#define PSF_MODE  SIGNAL_10B
-
-uint32_t tick   = 0   ;
-uint16_t tone   = 440 ;
-
-/* ************************************************************************* */
-/*                                    Code                                   */
-/* ************************************************************************* */
-struct header_struct {
-   char     head[4];
-   uint32_t id;
-   uint16_t N;
-   uint16_t fs ;
-   uint32_t maxIndex;
-   uint32_t minIndex;
-   q15_t    maxValue;
-   q15_t    minValue;
-   q15_t    rms;
-   char     tail[4];
-} header={"head",0,128,10000,0,0,0,0,0,"tail"};
-
-
-int main ( void ) {
-   uint16_t sample = 0;
-   int16_t adc [ header.N ];
-   boardConfig (                  );
-   uartConfig  ( UART_USB, 460800 );
-   adcConfig   ( ADC_ENABLE       );
-   dacConfig   ( DAC_ENABLE       );
-   cyclesCounterInit ( EDU_CIAA_NXP_CLOCK_SPEED );
-   while(1) {
-      cyclesCounterReset();
-      float t=(tick/(float)header.fs);
-      tick++;
-      q15_t og_sample = 512*arm_sin_f32(t*2*PI*tone);
-      #if PSF_MODE == SIGNAL_10B
-         adc[sample] = (((adcRead(CH1)-512)) << 6);
-      #elif PSF_MODE == SIGNAL_4B
-         adc[sample] = (((adcRead(CH1)-512)) >> 6 << 12);
-      #elif PSF_MODE == SIGNAL_ORIGINAL
-         adc[sample] = og_sample << 6;
-      #endif
-      uartWriteByteArray ( UART_USB ,(uint8_t* )&adc[sample] ,sizeof(adc[0]) );
-      dacWrite(DAC, og_sample + 512);
-      if ( ++sample==header.N ) {
-         gpioToggle ( LEDR ); // este led blinkea a fs/N
-         arm_max_q15 ( adc, header.N, &header.maxValue,&header.maxIndex );
-         arm_min_q15 ( adc, header.N, &header.minValue,&header.minIndex );
-         arm_rms_q15 ( adc, header.N, &header.rms                       );
-         //trigger(2);
-         header.id++;
-         uartWriteByteArray ( UART_USB ,(uint8_t*)&header ,sizeof(header ));
-         adcRead(CH1); //why?? hay algun efecto minimo en el 1er sample.. puede ser por el blinkeo de los leds o algo que me corre 10 puntos el primer sample. Con esto se resuelve.. habria que investigar el problema en detalle
-         sample = 0;
-      }
-      gpioToggle ( LED1 );                                           // este led blinkea a fs/2
-      while(cyclesCounterRead()< EDU_CIAA_NXP_CLOCK_SPEED/header.fs) // el clk de la CIAA es 204000000
-         ;
-   }
-}
-```
-
-### Código Python
-
-```python
-#!python3
-import numpy as np
-import matplotlib.pyplot as plt
-from   matplotlib.animation import FuncAnimation
-import os
-import io
-import serial
-
-STREAM_FILE=("/dev/ttyUSB1","serial")
-#STREAM_FILE=("log.bin","file")
-
-adc   =  None
-header = { "head": b"head", "id": 0, "N": 128, "fs": 10000, "maxIndex":0, "minIndex":0, "maxValue":0, "minValue":0, "rms":0, "tail":b"tail" }
-fig    = plt.figure ( 1 )
-
-adcAxe = fig.add_subplot ( 2,1,1                            )
-adcLn, = plt.plot        ( [],[],'r-',linewidth=4           )
-minValueLn, = plt.plot   ( [],[],'g-',linewidth=2,alpha=0.3 )
-maxValueLn, = plt.plot   ( [],[],'y-',linewidth=2,alpha=0.3 )
-rmsLn, = plt.plot        ( [],[],'b-',linewidth=2,alpha=0.3 )
-minIndexLn, = plt.plot   ( [],[],'go',linewidth=6,alpha=0.8 )
-maxIndexLn, = plt.plot   ( [],[],'yo',linewidth=6,alpha=0.8 )
-
-adcAxe.grid              ( True                             )
-adcAxe.set_ylim          ( -1.7 ,1.7                            )
-
-text = adcAxe.text(0, 1.5, 'No Data')
-
-fftAxe = fig.add_subplot ( 2,1,2                  )
-fftLn, = plt.plot        ( [],[],'b-',linewidth=4 )
-fftAxe.grid              ( True                   )
-fftAxe.set_ylim          ( 0 ,0.2                )
-
-def findHeader(f,h):
-    find=False
-    while(not find):
-        data=bytearray(len(h["head"]))
-        while data!=h["head"]:
-            data+=f.read(1)
-            del data[0]
-
-        h["id"]       = readInt4File(f,4)
-        h["N" ]       = readInt4File(f)
-        h["fs"]       = readInt4File(f)
-        h["maxIndex"] = readInt4File(f,4)
-        h["minIndex"] = readInt4File(f,4)
-        h["maxValue"] = (readInt4File(f,sign = True)*1.65)/(2**6*512)
-        h["minValue"] = (readInt4File(f,sign = True)*1.65)/(2**6*512)
-        h["rms"]      = (readInt4File(f,sign = True)*1.65)/(2**6*512)
-
-        data=bytearray(b'1234')
-        for i in range(len(h["tail"])):
-            data+=f.read(1)
-            del data[0]
-        find = data==h["tail"]
-    print({k:round(v,2) if isinstance(v,float) else v for k,v in h.items()})
-    return h["id"],h["N"],h["fs"],h["minValue"],h["maxValue"],h["rms"],h["minIndex"],h["maxIndex"]
-
-def readInt4File(f,size=2,sign=False):
-    raw=f.read(1)
-    while( len(raw) < size):
-        raw+=f.read(1)
-    return (int.from_bytes(raw,"little",signed=sign))
-
-def flushStream(f,h):
-    if(STREAM_FILE[1]=="serial"): #pregunto si estoy usando la bibioteca pyserial o un file
-        f.flushInput()
-    else:
-        f.seek ( 2*h["N"],io.SEEK_END)
-
-def readSamples(adc,N,trigger=False,th=0):
-    state="waitLow" if trigger else "sampling"
-    i=0
-    for t in range(N):
-        sample = (readInt4File(streamFile,sign = True)*1.65)/(2**6*512)
-        state,nextI= {
-                "waitLow" : lambda sample,i: ("waitHigh",0) if sample<th else ("waitLow" ,0),
-                "waitHigh": lambda sample,i: ("sampling",0) if sample>th else ("waitHigh",0),
-                "sampling": lambda sample,i: ("sampling",i+1)
-                }[state](sample,i)
-        adc[i]=sample
-        i=nextI
-
-def update(t):
-    global header
-    global adc
-    flushStream ( streamFile,header )
-    id,N,fs,minValue,maxValue,rms,minIndex,maxIndex=findHeader ( streamFile,header )
-    adc   = np.zeros(N)
-    time  = np.arange(0,N/fs,1/fs)
-    readSamples(adc,N,False,-1.3)
-
-    adcAxe.set_xlim     ( 0    ,N/fs              )
-    adcLn.set_data      ( time ,adc               )
-    minValueLn.set_data ( time,minValue           )
-    maxValueLn.set_data ( time,maxValue           )
-    rmsLn.set_data      ( time,rms                )
-    minIndexLn.set_data ( time[minIndex],minValue )
-    maxIndexLn.set_data ( time[maxIndex],maxValue )
-    text.set_text(str(header))
-
-    fft=np.abs ( 1/N*np.fft.fft(adc ))**2
-    fftAxe.set_ylim ( 0 ,np.max(fft)+0.05)
-    fftAxe.set_xlim ( 0 ,fs/2 )
-    fftLn.set_data ( (fs/N )*fs*time ,fft)
-
-    return adcLn, fftLn, minValueLn, maxValueLn, rmsLn, minIndexLn, maxIndexLn, text
-
-#seleccionar si usar la biblioteca pyserial o leer desde un archivo log.bin
-if(STREAM_FILE[1]=="serial"):
-    streamFile = serial.Serial(port=STREAM_FILE[0],baudrate=460800,timeout=None)
-else:
-    streamFile=open(STREAM_FILE[0],"rb",0)
-
-ani=FuncAnimation(fig,update,1000,init_func=None,blit=True,interval=1,repeat=True)
-plt.draw()
-plt.get_current_fig_manager().window.showMaximized() #para QT5
-plt.show()
-streamFile.close()
-```
-## Ejercicio B - Capturas
-
-### Hardware
-Se muestran a continuación fotos del hardware utilizado.
-
-![HW1](images/hardware/photo_2022-07-10_00-41-01.jpg)
-
-![HW2](images/hardware/photo_2022-07-10_00-41-06.jpg)
-
-![HW3](images/hardware/photo_2022-07-10_00-41-10.jpg)
-
-### Señales
-
-Se muestran a continuación capturas de las señales obtenidas.
-
-### Señal Original
-
-![OG](images/signals/original.png)
-
-### Señal Digitalizada a 10 bits
-
-![10b](images/signals/10_bits.png)
-
-### Señal Digitalizada a 4 bits
-
-![4b](images/signals/4_bits.png)
-
-### Comparación
-
-| Señal    	| Máximo 	| Mínimo 	| RMS   	| Máximo en 440Hz 	|
-|----------	|--------	|--------	|-------	|-----------------	|
-| Original 	| 1.647  	| -1.647 	| 1.173 	| ~0.45           	|
-| 10-bits  	| 1.466  	| -1.563 	| 1.062 	| ~0.35           	|
-| 4-bits   	| 1.444  	| -1.65  	| 1.078 	| ~0.35           	|
-
-## Ejercicio B - Comentarios
-
-En pirmer lugar, se observa que la señal original cuenta con levemente mayor 
-extrusión que las señales medidas. Esto es de esperarse, dado que las segundas
-cuentan con la atenuación propia del circuito construido y la primera no. 
-Esto mismo ocurre con el valor RMS. Esto se hace evidente además observando el 
-pico de 440Hz en el espectro, de valor ~0.45 en la señal original contra 
-~0.35 en las señales adquiridas. 
-
-
-En cuanto a la comparación entre las señales digitalizadas en 10 y 4 bits, 
-no se observan notorias diferencias en máximos y mínimos, pero sí en
-el RMS. Esto se debe a que la señal cuantizada a 4 bits cuenta con mayor ruido
-de cuantización que aquella cuantizada a 10 bits. Desde un punto de vista teórico, 
-de darse las precondiciones estudiadas en clase, puede considerarse el ruido
-de cuantización aditivo y con distribuición uniforme. Esto justifica la diferencia
-qu se observa en los valores de RMS: si bien la componente de señal de interés en ambos
-casos cuenta con niveles similares de potencia (observar que el pico de 440Hz
-en el espectro tiene un valor de ~0.35 en ambos casos), aquella cuantizada en
-4 bits cuenta con un mayor nivel de ruido de cuantización. Al considerar entonces
-la potencia total como la suma de potencia de la señal original con la del ruido de cuantización,
-es razonable que aquella con mayor ruido (senoidal cuantizada a 4bits) sea la
-de mayor RMS.
 
