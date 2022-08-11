@@ -292,6 +292,8 @@ de frecuencias en 48.9Hz y 52.5Hz (con su contrapartida negativa). Esto
 deja ver que, posiblemente, la señal original se trate de una
 suma de dos tonos. 
 
+La resolución original en frecuencia es de 2Hz y la distancia entre los picos luego del padding se vé cercana a 3.5Hz. Esto implica que en el espectro sin paddear, dos bines consecutivos en la zona de interés caen en picos distintos y no permite distinguirlos (no hay un punto intermedio que no sea parte de un pico para diferenciarlos).
+
 # IDFT
 ## Ejercicio I
 ### Consigna
