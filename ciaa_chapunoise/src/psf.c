@@ -37,18 +37,34 @@ int main ( void ) {
       if (++sample==header.N ) {
          gpioToggle ( LEDR );
          sample = 0;
-         arm_conv_q15       ( adc,header.N,h,h_LENGTH,y);
+         arm_conv_q15(adc, header.N, h, h_LENGTH, y);
          header.id++;
-         uartWriteByteArray ( UART_USB ,(uint8_t*)&header ,sizeof(struct header_struct ));
-         for (int i=0;i<(header.N+h_LENGTH-1 );i++) {
-            uartWriteByteArray ( UART_USB ,(uint8_t* )(i<header.N?&adc[i]:&offset ),sizeof(adc[0]));
-            uartWriteByteArray ( UART_USB ,(uint8_t* )(i<h_LENGTH?&h  [i]:&zero   ),sizeof(h[0])  );
-            uartWriteByteArray ( UART_USB ,(uint8_t* )(           &y  [i]         ),sizeof(y[0])  );
+         uartWriteByteArray(
+            UART_USB,
+            (uint8_t*)&header,
+            sizeof(struct header_struct)
+         );
+         for (int i=0;i<(header.N+h_LENGTH-1); i++) {
+            uartWriteByteArray (
+               UART_USB,
+               (uint8_t*)(i<header.N ? &adc[i] : &offset),
+               sizeof(adc[0])
+            );
+            uartWriteByteArray(
+               UART_USB,
+               (uint8_t* )(i<h_LENGTH ? &h[i] : &zero),
+               sizeof(h[0])
+            );
+            uartWriteByteArray(
+               UART_USB,
+               (uint8_t*)(&y[i]),
+               sizeof(y[0])
+            );
          }
          adcRead(CH1);
       }
       gpioToggle(LED1);
-      while(cyclesCounterRead()< EDU_CIAA_NXP_CLOCK_SPEED/header.fs)
+      while(cyclesCounterRead() < EDU_CIAA_NXP_CLOCK_SPEED / header.fs)
          ;
    }
 }
